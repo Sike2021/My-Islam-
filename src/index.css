@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-arabic: 'Amiri', 'Traditional Arabic', serif;
+  --font-display: 'Cinzel', serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  --color-emerald-950: #021a14;
+  --color-emerald-900: #032b21;
+  --color-emerald-850: #053b2e;
+  --color-emerald-800: #084c3c;
+  --color-gold-300: #fde68a;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+}
+
+@layer base {
+  body {
+    background-color: #021a14;
+    color: #f3f4f6;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom Islamic gold-accent scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #021a14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #064e3b;
+  border-radius: 9999px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0f766e;
+}
+
+/* Arabic typography enhancements */
+.font-arabic {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  line-height: 2.2;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}

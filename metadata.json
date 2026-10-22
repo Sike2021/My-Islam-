@@ -1,0 +1,6 @@
+{
+  "name": "Easy Islam",
+  "description": "Auto Quran Recitation Timer, Khatam Tracker, Multi-Qari Player with background lockscreen playback, and offline Quran reader.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
