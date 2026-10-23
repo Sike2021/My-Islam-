@@ -1,0 +1,236 @@
+
+:root {
+  --bg-color: #050505;
+  --card-bg: #111111;
+  --accent-green: #ccff00;
+  --accent-pink: #ff0055;
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --border-color: #222222;
+  --broadcast-bg: rgba(0, 0, 0, 0.9);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, sans-serif;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Gameplay 2D Overhaul */
+.gameplay-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #000;
+}
+
+.canvas-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.game-canvas {
+  max-width: 100%;
+  max-height: 80vh;
+  border: 1px solid #111;
+}
+
+/* Broadcast Scorecard Bar */
+.broadcast-hud-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: var(--broadcast-bg);
+  display: flex;
+  align-items: center;
+  border-top: 2px solid var(--accent-green);
+  z-index: 10;
+  padding: 0 10px;
+  box-sizing: border-box;
+  font-family: 'Oswald', sans-serif;
+}
+
+.hud-score-box {
+  background: var(--accent-pink);
+  color: white;
+  padding: 5px 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 120px;
+  clip-path: polygon(0 0, 90% 0, 100% 100%, 0% 100%);
+}
+
+.hud-score-main { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+.hud-overs { font-size: 0.8rem; font-weight: bold; opacity: 0.9; }
+
+.hud-batters {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  padding: 0 30px;
+  border-right: 1px solid #333;
+}
+
+.batter-stat-live {
+  display: flex;
+  flex-direction: column;
+}
+
+.batter-name { font-size: 0.9rem; font-weight: bold; text-transform: uppercase; color: var(--accent-green); }
+.batter-runs { font-size: 1.2rem; font-weight: 800; }
+.batter-runs span { font-size: 0.8rem; font-weight: normal; color: #888; }
+.batter-active-dot { color: var(--accent-green); margin-left: 5px; }
+
+.hud-bowler {
+  padding: 0 30px;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
+.bowler-name { font-size: 0.8rem; text-transform: uppercase; color: #aaa; }
+.bowler-figs { font-size: 1.1rem; font-weight: 800; }
+
+.hud-over-meter {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+  padding-right: 20px;
+}
+
+.ball-dot {
+  width: 24px;
+  height: 24px;
+  background: #222;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 1px solid #444;
+}
+
+.ball-dot.wicket { background: var(--accent-pink); border-color: white; }
+.ball-dot.boundary { background: var(--accent-green); color: black; border-color: white; }
+
+/* HUD Controls Panel */
+.floating-controls {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 11;
+}
+
+.control-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--accent-green);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.control-btn:hover { background: var(--accent-green); color: black; }
+.control-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Match Summary Overhaul */
+.match-summary-screen {
+  background: #000;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.summary-header-bbl {
+  background: var(--accent-green);
+  color: black;
+  padding: 10px;
+  text-align: center;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1.5rem;
+}
+
+.summary-content-bbl {
+  padding: 20px;
+  background: #111;
+}
+
+.team-summary-block {
+  margin-bottom: 20px;
+  border: 1px solid #333;
+}
+
+.team-summary-header {
+  background: #222;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 15px;
+  border-bottom: 2px solid var(--accent-green);
+}
+
+.team-summary-header h3 { margin: 0; font-size: 1rem; color: var(--accent-green); text-transform: uppercase; }
+.team-summary-header .team-score { font-weight: 900; font-size: 1.2rem; }
+
+.summary-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #333;
+}
+
+.stats-col {
+  background: #111;
+  padding: 10px;
+}
+
+.stat-row-bbl {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #222;
+}
+
+.stat-row-bbl .val { font-weight: bold; }
+.stat-row-bbl .runs-balls { color: #888; font-size: 0.8rem; }
+
+/* Modal styles adjustment */
+.modal-backdrop {
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animations */
+@keyframes flash {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.batting-aggression-active {
+  border-bottom: 2px solid var(--accent-pink);
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Volume2, Wifi, WifiOff, DownloadCloud, Sparkles, Compass } from 'lucide-react';
+import { Volume2, Wifi, WifiOff, DownloadCloud, Sparkles, Compass, Menu } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { Qari } from '../data/qaris';
@@ -9,6 +9,7 @@ interface HeaderProps {
   onOpenQariModal: () => void;
   onOpenCityModal: () => void;
   onOpenInstallModal?: () => void;
+  onOpenMenu?: () => void;
   cityName: string;
 }
 
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenQariModal,
   onOpenCityModal,
   onOpenInstallModal,
+  onOpenMenu,
   cityName,
 }) => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
@@ -36,6 +38,16 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="max-w-md mx-auto flex items-center justify-between">
           {/* Logo & App Brand */}
           <div className="flex items-center gap-2.5">
+            {onOpenMenu && (
+              <button
+                onClick={onOpenMenu}
+                className="w-9 h-9 rounded-xl bg-emerald-900/70 hover:bg-emerald-800 border border-emerald-700/60 text-amber-400 flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm"
+                title="Open Navigation Menu"
+              >
+                <Menu size={18} />
+              </button>
+            )}
+
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-emerald-950 font-bold font-serif text-lg">
               <span>إ</span>
             </div>

@@ -59,21 +59,32 @@ export const DrIsrarPlayerView: React.FC<DrIsrarPlayerViewProps> = () => {
     ? searchBayans(searchQuery, selectedSeries)
     : getBayansBySeries(selectedSeries);
 
-  useEffect(() => {
-    // When selected bayan changes, pause and reset
-    setIsPlaying(false);
+  const handleSelectBayan = (bayan: IsrarBayanItem, autoPlay = true) => {
+    setSelectedBayan(bayan);
     setCurrentTime(0);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = selectedBayan.audioUrl;
+    if (mediaMode === 'audio' && audioRef.current) {
+      audioRef.current.src = bayan.audioUrl;
       audioRef.current.currentTime = 0;
-    }
-    if (videoRef.current && selectedBayan.videoUrl) {
-      videoRef.current.pause();
-      videoRef.current.src = selectedBayan.videoUrl;
+      if (autoPlay) {
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
+    } else if (mediaMode === 'video' && videoRef.current && bayan.videoUrl) {
+      videoRef.current.src = bayan.videoUrl;
       videoRef.current.currentTime = 0;
+      if (autoPlay) {
+        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
     }
-  }, [selectedBayan]);
+  };
+
+  useEffect(() => {
+    if (audioRef.current && !audioRef.current.src.includes(selectedBayan.audioUrl)) {
+      audioRef.current.src = selectedBayan.audioUrl;
+    }
+    if (videoRef.current && selectedBayan.videoUrl && !videoRef.current.src.includes(selectedBayan.videoUrl)) {
+      videoRef.current.src = selectedBayan.videoUrl;
+    }
+  }, [selectedBayan, mediaMode]);
 
   const togglePlay = () => {
     if (mediaMode === 'audio' && audioRef.current) {
@@ -384,7 +395,7 @@ export const DrIsrarPlayerView: React.FC<DrIsrarPlayerViewProps> = () => {
           return (
             <div
               key={bayan.id}
-              onClick={() => setSelectedBayan(bayan)}
+              onClick={() => handleSelectBayan(bayan, true)}
               className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
                 isCurrent
                   ? 'bg-amber-500/20 border-amber-400/80 shadow-md'

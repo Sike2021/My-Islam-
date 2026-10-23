@@ -34,6 +34,7 @@ interface QuranReaderProps {
   onSelectSurah: (surahNumber: number) => void;
   onPlayAyah: (surahNumber: number, ayahNumber: number, phase?: ActivePhase) => void;
   onTogglePlay: () => void;
+  onOpenSearchTopic?: () => void;
 }
 
 export const QuranReader: React.FC<QuranReaderProps> = ({
@@ -46,6 +47,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   onSelectSurah,
   onPlayAyah,
   onTogglePlay,
+  onOpenSearchTopic,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSurahModalOpen, setIsSurahModalOpen] = useState(false);
@@ -208,14 +210,26 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
           </button>
 
           {/* Master Hands-Free Play Button (Arabic + Urdu Voice Each Ayat) */}
-          <button
-            onClick={() => onPlayAyah(currentMeta.number, 1, 'arabic')}
-            className="py-2.5 px-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-emerald-950 font-bold text-xs shadow-md shadow-amber-500/20 active:scale-90 transition flex items-center gap-1.5"
-            title="Play Arabic + Urdu Translation Voice Hands-Free"
-          >
-            <Play size={14} fill="currentColor" />
-            <span className="font-sans">Play All</span>
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onOpenSearchTopic && (
+              <button
+                onClick={onOpenSearchTopic}
+                className="py-2.5 px-2.5 rounded-2xl bg-emerald-900/80 hover:bg-emerald-800 text-amber-300 border border-emerald-700/60 font-semibold text-xs active:scale-95 transition flex items-center gap-1"
+                title="Search Quran by Urdu topics (نماز, شرک, صبر, والدین...)"
+              >
+                <Search size={13} />
+                <span className="hidden sm:inline">Search</span>
+              </button>
+            )}
+            <button
+              onClick={() => onPlayAyah(currentMeta.number, 1, 'arabic')}
+              className="py-2.5 px-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-emerald-950 font-bold text-xs shadow-md shadow-amber-500/20 active:scale-90 transition flex items-center gap-1.5"
+              title="Play Arabic + Urdu Translation Voice Hands-Free"
+            >
+              <Play size={14} fill="currentColor" />
+              <span className="font-sans">Play All</span>
+            </button>
+          </div>
         </div>
 
         {/* Translation Mode & Font Controls */}
@@ -565,6 +579,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                   key={surah.number}
                   onClick={() => {
                     onSelectSurah(surah.number);
+                    onPlayAyah(surah.number, 1, 'arabic');
                     setIsSurahModalOpen(false);
                   }}
                   className={`w-full p-2.5 rounded-2xl flex items-center justify-between transition text-left ${

@@ -5,6 +5,12 @@ import { AutoRecitationTimer } from './components/AutoRecitationTimer';
 import { KhatamTracker } from './components/KhatamTracker';
 import { QuranReader } from './components/QuranReader';
 import { DrIsrarPlayerView } from './components/DrIsrarPlayerView';
+import { QariWaheedAndNaatsView } from './components/QariWaheedAndNaatsView';
+import { UlamaBayansView } from './components/UlamaBayansView';
+import { QuranTopicSearch } from './components/QuranTopicSearch';
+import { DuasSanctuaryView } from './components/DuasSanctuaryView';
+import { AppMenuDrawer } from './components/AppMenuDrawer';
+import { HadithView } from './components/HadithView';
 import { OfflineManager } from './components/OfflineManager';
 import { QarisShowcase } from './components/QarisShowcase';
 import { MiniPlayer } from './components/MiniPlayer';
@@ -25,6 +31,7 @@ export default function App() {
   const [isQariModalOpen, setIsQariModalOpen] = useState(false);
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // City preference for prayer times
   const [selectedCity, setSelectedCity] = useState<CityOption>(() => {
@@ -103,7 +110,7 @@ export default function App() {
     setSelectedReaderSurah(lastPosition.surahNumber);
   };
 
-  const handleOpenReaderToAyah = (surahNum: number, ayahNum: number) => {
+  const handleOpenReaderToAyah = (surahNum: number, ayahNum: number = 1) => {
     setSelectedReaderSurah(surahNum);
     setActiveTab('reader');
   };
@@ -120,6 +127,7 @@ export default function App() {
         onOpenQariModal={() => setIsQariModalOpen(true)}
         onOpenCityModal={() => setIsCityModalOpen(true)}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        onOpenMenu={() => setIsMenuOpen(true)}
         cityName={selectedCity.name}
       />
 
@@ -142,7 +150,123 @@ export default function App() {
       />
 
       {/* Main Container / Mobile Viewport */}
-      <main className="w-full max-w-md mx-auto flex-1 px-4 pt-3">
+      <main className="w-full max-w-md mx-auto flex-1 px-4 pt-2">
+        {/* Quick Access Horizontal Pills (Android Touch Friendly) */}
+        <div className="flex items-center overflow-x-auto no-scrollbar gap-1.5 pb-2.5 mb-2 -mx-1 px-1">
+          <button
+            onClick={() => setActiveTab('hadith')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'hadith'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>📚</span>
+            <span>Hadith Library</span>
+            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">کتب احادیث • ڈاؤنلوڈ</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('duas')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'duas'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🤲</span>
+            <span>Duas & 4 Quls</span>
+            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">آیت الکرسی • درود</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('reader')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'reader'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>📖</span>
+            <span>Read Quran</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('ulama')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'ulama'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🎓</span>
+            <span>Ulama Bayans</span>
+            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">مودودی • اسحاق</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('israr')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'israr'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🎙️</span>
+            <span>Dr. Israr</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('naats')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'naats'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🎵</span>
+            <span>Qari Waheed Naats</span>
+            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">شکرًا لك ربي</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('search')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'search'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🔍</span>
+            <span>Urdu Search</span>
+            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">نماز • شرک</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('timer')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'timer'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>⏱️</span>
+            <span>Timer</span>
+          </button>
+        </div>
+
+        {activeTab === 'hadith' && (
+          <HadithView
+            onOpenSurahReader={handleOpenReaderToAyah}
+          />
+        )}
+
+        {activeTab === 'duas' && (
+          <DuasSanctuaryView
+            onOpenSurahReader={handleOpenReaderToAyah}
+          />
+        )}
+
         {activeTab === 'timer' && (
           <AutoRecitationTimer
             isPlaying={isPlaying}
@@ -163,6 +287,49 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'reader' && (
+          <QuranReader
+            selectedSurahNumber={selectedReaderSurah}
+            currentPlayingSurah={currentSurahNumber}
+            currentPlayingAyah={currentAyahNumber}
+            activePhase={activePhase}
+            sequenceMode={sequenceMode}
+            isPlaying={isPlaying}
+            onSelectSurah={handleSelectSurahFromReader}
+            onPlayAyah={handlePlayAyah}
+            onTogglePlay={togglePlay}
+            onOpenSearchTopic={() => setActiveTab('search')}
+          />
+        )}
+
+        {activeTab === 'search' && (
+          <QuranTopicSearch
+            onOpenSurahReader={surahNum => {
+              setSelectedReaderSurah(surahNum);
+              setActiveTab('reader');
+            }}
+          />
+        )}
+
+        {activeTab === 'naats' && (
+          <QariWaheedAndNaatsView
+            onOpenSurahReader={surahNum => {
+              setSelectedReaderSurah(surahNum);
+              setActiveTab('reader');
+            }}
+          />
+        )}
+
+        {activeTab === 'ulama' && (
+          <UlamaBayansView
+            onOpenSurahReader={surahNum => {
+              setSelectedReaderSurah(surahNum);
+              setActiveTab('reader');
+            }}
+            onNavigateToIsrar={() => setActiveTab('israr')}
+          />
+        )}
+
         {activeTab === 'khatam' && (
           <KhatamTracker
             lastPosition={lastPosition}
@@ -179,20 +346,6 @@ export default function App() {
 
         {activeTab === 'israr' && (
           <DrIsrarPlayerView />
-        )}
-
-        {activeTab === 'reader' && (
-          <QuranReader
-            selectedSurahNumber={selectedReaderSurah}
-            currentPlayingSurah={currentSurahNumber}
-            currentPlayingAyah={currentAyahNumber}
-            activePhase={activePhase}
-            sequenceMode={sequenceMode}
-            isPlaying={isPlaying}
-            onSelectSurah={handleSelectSurahFromReader}
-            onPlayAyah={handlePlayAyah}
-            onTogglePlay={togglePlay}
-          />
         )}
 
         {activeTab === 'offline' && (
@@ -231,11 +384,22 @@ export default function App() {
         onOpenFullPlayer={() => setIsFullPlayerOpen(true)}
       />
 
-      {/* Bottom Android Navigation Bar */}
+      {/* Bottom Android Navigation Bar (Fixed 5-Tab Layout) */}
       <BottomNav
         activeTab={activeTab}
         onTabChange={tab => setActiveTab(tab)}
+        onOpenMenu={() => setIsMenuOpen(true)}
         isTimerRunning={isTimerActive}
+      />
+
+      {/* App Navigation Directory Menu Drawer */}
+      <AppMenuDrawer
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={tab => setActiveTab(tab)}
+        onOpenCityModal={() => setIsCityModalOpen(true)}
+        onOpenInstallModal={() => setIsInstallModalOpen(true)}
       />
 
       {/* Full Audio Player Drawer (Expandable) */}
