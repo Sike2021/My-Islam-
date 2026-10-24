@@ -25,7 +25,8 @@ import {
   ExternalLink,
   GraduationCap,
   RefreshCw,
-  Repeat
+  Repeat,
+  Video
 } from 'lucide-react';
 
 interface UlamaBayansViewProps {
@@ -48,6 +49,7 @@ export const UlamaBayansView: React.FC<UlamaBayansViewProps> = ({
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
@@ -461,6 +463,20 @@ export const UlamaBayansView: React.FC<UlamaBayansViewProps> = ({
               <Download className="w-4 h-4" />
             </a>
 
+            {/* Watch Video Toggle Button (as requested: Audio player with optional toggle to watch video) */}
+            <button
+              onClick={() => setIsVideoPlayerOpen(prev => !prev)}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                isVideoPlayerOpen
+                  ? 'bg-amber-400 text-emerald-950 border border-amber-300 font-bold shadow-md'
+                  : 'bg-red-900/50 hover:bg-red-900/80 text-amber-300 border border-red-500/40'
+              }`}
+              title="Toggle to watch video bayan"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>{isVideoPlayerOpen ? 'Audio Only' : 'Watch Video'}</span>
+            </button>
+
             {/* Open in Quran Reader if lecture is Surah based */}
             {onOpenSurahReader && selectedLecture.surahNumber !== undefined && selectedLecture.surahNumber > 0 && (
               <button
@@ -473,6 +489,39 @@ export const UlamaBayansView: React.FC<UlamaBayansViewProps> = ({
             )}
           </div>
         </div>
+
+        {/* Optional Collapsible Video Frame */}
+        {isVideoPlayerOpen && (
+          <div className="pt-2 border-t border-emerald-800/80 space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between text-xs text-amber-300/90">
+              <span className="font-medium">
+                📺 Video Bayan: {selectedLecture.titleEnglish} &bull; {selectedLecture.scholarName}
+              </span>
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(
+                  `${selectedLecture.scholarName} ${selectedLecture.titleEnglish} ${selectedLecture.titleUrdu}`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-amber-400 hover:underline flex items-center gap-1"
+              >
+                <span>Search YouTube</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-amber-500/40 bg-black shadow-2xl">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(
+                  `${selectedLecture.scholarName} ${selectedLecture.titleEnglish} تفہیم القرآن`
+                )}`}
+                title={`Video Bayan: ${selectedLecture.titleEnglish}`}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        )}
 
         {/* Timeline Scrubber */}
         <div className="space-y-1.5">

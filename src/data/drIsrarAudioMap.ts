@@ -130,3 +130,13 @@ export function getDrIsrarAudioUrl(surahNumber: number): string {
   }
   return `${DR_ISRAR_ARCHIVE_BASE_URL}/${encodeURIComponent(filename)}`;
 }
+
+export function getDrIsrarAudioSources(surahNumber: number): string[] {
+  const filename = DR_ISRAR_AUDIO_FILES[surahNumber] || "001 AL-FATIAH.mp3";
+  const enc = encodeURIComponent(filename);
+  return [
+    `https://archive.org/download/BayanUlQuranByDr.IsrarAhmed_201707/${enc}`,
+    `https://archive.org/download/002ALBAQARAH_201411/${surahNumber === 1 ? '001-AL-FAATIHAH.mp3' : enc}`,
+    `https://ia801602.us.archive.org/27/items/BayanUlQuranByDr.IsrarAhmed_201707/${enc}`,
+  ];
+}

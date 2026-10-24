@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Play,
   Pause,
@@ -14,62 +14,53 @@ import {
   Sliders,
   Repeat,
   Mic,
+  Video,
+  Image as ImageIcon,
+  Check,
 } from 'lucide-react';
-import { SurahMeta } from '../data/quranMetadata';
-import { Qari } from '../data/qaris';
-import { ActivePhase, RecitationSequenceMode } from '../hooks/useQuranAudio';
+import { useUnifiedPlayer } from '../context/UnifiedPlayerContext';
 
 interface FullAudioPlayerDrawerProps {
   isOpen: boolean;
-  currentSurah: SurahMeta;
-  currentAyahNumber: number;
-  activePhase: ActivePhase;
-  sequenceMode: RecitationSequenceMode;
-  currentQari: Qari;
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  playbackSpeed: number;
-  isAudioLoading: boolean;
-  isTimerActive: boolean;
-  timerTotalMinutes: number;
-  timerRemainingSeconds: number;
-  onTogglePlay: () => void;
-  onSeek: (seconds: number) => void;
-  onNextAyah: () => void;
-  onPrevAyah: () => void;
-  onChangeSpeed: (speed: number) => void;
-  onStartTimer: (minutes: number, mode: 'always_start' | 'continue_last') => void;
-  onStopTimer: () => void;
-  onOpenQariModal: () => void;
   onClose: () => void;
+  onOpenQariModal: () => void;
+  onOpenImageEditor: () => void;
 }
 
 export const FullAudioPlayerDrawer: React.FC<FullAudioPlayerDrawerProps> = ({
   isOpen,
-  currentSurah,
-  currentAyahNumber,
-  activePhase,
-  sequenceMode,
-  currentQari,
-  isPlaying,
-  currentTime,
-  duration,
-  playbackSpeed,
-  isAudioLoading,
-  isTimerActive,
-  timerTotalMinutes,
-  timerRemainingSeconds,
-  onTogglePlay,
-  onSeek,
-  onNextAyah,
-  onPrevAyah,
-  onChangeSpeed,
-  onStartTimer,
-  onStopTimer,
-  onOpenQariModal,
   onClose,
+  onOpenQariModal,
+  onOpenImageEditor,
 }) => {
+  const {
+    activeTrack,
+    isPlaying,
+    currentTime,
+    duration,
+    playbackSpeed,
+    isLoading,
+    sequenceMode,
+    activePhase,
+    currentQari,
+    effectiveCover,
+    isTimerActive,
+    timerTotalMinutes,
+    timerRemainingSeconds,
+    togglePlay,
+    seek,
+    changeSpeed,
+    next,
+    prev,
+    startTimer,
+    stopTimer,
+    setSequenceMode,
+    openVideoWatch,
+  } = useUnifiedPlayer();
+
+  const [isSpeedMenuOpen, setIsSpeedMenuOpen] = useState(false);
+  const [isTimerPickerOpen, setIsTimerPickerOpen] = useState(false);
+
   if (!isOpen) return null;
 
   const formatTime = (secs: number) => {
@@ -79,136 +70,162 @@ export const FullAudioPlayerDrawer: React.FC<FullAudioPlayerDrawerProps> = ({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const handleScrubberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSeek(parseFloat(e.target.value));
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    seek(val);
   };
 
+  const speeds = [0.75, 1, 1.25, 1.5, 2];
+  const timerOptions = [10, 15, 20, 30, 45, 60];
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-md mx-auto bg-gradient-to-b from-emerald-900 via-emerald-950 to-emerald-950 border-t border-emerald-700/80 rounded-t-3xl p-6 text-white shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
-        {/* Header / Dismiss Bar */}
-        <div className="flex items-center justify-between pb-2 border-b border-emerald-800/60">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-md mx-auto bg-emerald-950 border-t-2 border-amber-500/40 rounded-t-3xl shadow-2xl p-5 pb-8 text-emerald-50 max-h-[92vh] overflow-y-auto no-scrollbar">
+        {/* Drag Handle & Close */}
+        <div className="flex items-center justify-between mb-2">
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-emerald-950 text-emerald-400 hover:text-white"
-            title="Minimize"
+            className="w-9 h-9 rounded-full bg-emerald-900/80 text-emerald-300 hover:text-white flex items-center justify-center transition active:scale-90"
           >
-            <ChevronDown size={20} />
+            <ChevronDown size={22} />
           </button>
-          <div className="text-center">
-            <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-semibold">
-              Hands-Free Verse Playback
-            </span>
-            <div className="text-xs font-semibold text-white">Arabic &bull; Urdu Voice</div>
+
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/80 border border-emerald-800 text-[11px] font-semibold text-amber-300">
+            <Sparkles size={12} />
+            <span>Unified Player • تمام میڈیا پلیئر</span>
           </div>
+
+          {/* Quick Image Customizer Icon */}
           <button
-            onClick={onOpenQariModal}
-            className="p-1.5 rounded-xl bg-emerald-950 text-amber-400 hover:text-amber-300"
-            title="Switch Qari"
+            onClick={onOpenImageEditor}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 text-[11px] font-semibold transition active:scale-95"
+            title="Edit Player Cover Image"
           >
-            <Volume2 size={18} />
+            <ImageIcon size={14} />
+            <span>Edit Cover</span>
           </button>
         </div>
 
-        {/* Center Artwork & Surah Calligraphy */}
-        <div className="flex flex-col items-center text-center space-y-4">
-          <div className="relative w-48 h-48 rounded-3xl overflow-hidden border-2 border-amber-500/30 shadow-2xl shadow-amber-500/10 group">
+        {/* Central Rotating Album Disc with Player Cover */}
+        <div className="relative my-4 flex flex-col items-center">
+          <div
+            onClick={onOpenImageEditor}
+            className="relative w-52 h-52 rounded-full overflow-hidden border-4 border-amber-400 shadow-2xl shadow-amber-400/20 cursor-pointer group"
+            title="Click to change player image"
+          >
             <img
-              src={currentQari.image}
-              alt={currentQari.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              src={effectiveCover}
+              alt={activeTrack.title}
+              className={`w-full h-full object-cover transition-transform duration-700 ${isPlaying ? 'scale-105' : ''}`}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-transparent to-transparent opacity-80" />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2">
-              <span className="text-xs font-mono font-bold text-amber-300 px-2.5 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-700">
-                Ayah {currentAyahNumber} of {currentSurah.totalVerses}
+            {/* Center vinyl spindle */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-emerald-950 border-4 border-amber-400 shadow-inner" />
+
+            {/* Hover Edit Overlay */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
+              <ImageIcon size={28} className="text-amber-400 mb-1" />
+              <span className="text-xs font-bold bg-emerald-950/90 px-3 py-1 rounded-full border border-amber-400/40">
+                Change Cover Image
               </span>
             </div>
+
+            {isLoading && (
+              <div className="absolute inset-0 bg-emerald-950/70 backdrop-blur-sm flex items-center justify-center">
+                <span className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+              </div>
+            )}
           </div>
 
-          <div>
-            <div className="font-arabic text-3xl text-amber-300 font-normal mb-1">
-              {currentSurah.nameArabic}
-            </div>
-            <h2 className="text-xl font-bold text-white font-display">
-              {currentSurah.number}. {currentSurah.nameEnglish}
-            </h2>
-            <p className="text-xs text-emerald-300/80 mt-0.5">
-              {currentSurah.nameTranslation} &bull; {currentSurah.totalVerses} Ayahs
-            </p>
-          </div>
+          {/* Track Category Badge */}
+          <div className="mt-3 flex items-center gap-2">
+            {activeTrack.categoryBadge && (
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
+                {activeTrack.categoryBadge}
+              </span>
+            )}
 
-          {/* Active Phase Pill (Arabic Recitation vs Urdu Voice) */}
-          <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-emerald-950/80 border border-emerald-800 text-xs">
-            <span
-              className={`px-3 py-1 rounded-xl font-mono font-bold transition ${
-                activePhase === 'arabic'
-                  ? 'bg-amber-400 text-emerald-950 shadow-md'
-                  : 'text-emerald-500'
-              }`}
-            >
-              1. Arabic Recitation
-            </span>
-            <span className="text-emerald-600 font-bold">&rarr;</span>
-            <span
-              className={`px-3 py-1 rounded-xl font-mono font-bold transition ${
-                activePhase === 'urdu'
-                  ? 'bg-amber-400 text-emerald-950 shadow-md'
-                  : 'text-emerald-500'
-              }`}
-            >
-              2. Spoken Urdu Voice
-            </span>
-          </div>
-
-          <div className="text-[11px] text-emerald-400 font-medium">
-            {activePhase === 'arabic'
-              ? `Reciter: ${currentQari.name}`
-              : 'Urdu Voice: Shamshad Ali Khan'}
+            {/* Watch Video Button if video available */}
+            {activeTrack.videoUrl && (
+              <button
+                onClick={() => openVideoWatch(activeTrack.videoUrl!, activeTrack.title, activeTrack.subtitle)}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold hover:bg-rose-500/30 transition active:scale-95"
+              >
+                <Video size={13} className="text-rose-400" />
+                <span>Watch Video</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Scrubber & Duration */}
-        <div className="space-y-1.5">
+        {/* Track Title & Urdu Subtitle */}
+        <div className="text-center mb-4">
+          <h2 className="text-lg font-bold text-white font-display flex items-center justify-center gap-2">
+            <span>{activeTrack.title}</span>
+            {activeTrack.arabicTitle && (
+              <span className="font-arabic text-amber-300 text-base">
+                {activeTrack.arabicTitle}
+              </span>
+            )}
+          </h2>
+
+          <p className="text-xs text-emerald-300 mt-1">
+            {activeTrack.subtitle}
+          </p>
+
+          {activeTrack.urduTitle && (
+            <p className="text-xs text-amber-300 font-arabic mt-1">
+              {activeTrack.urduTitle}
+            </p>
+          )}
+
+          {/* Special Quran Voice Badge */}
+          {activeTrack.type === 'quran' && (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900 border border-emerald-800 text-[11px] text-emerald-200">
+              <Mic size={12} className="text-amber-400" />
+              <span>Urdu Audio: </span>
+              <strong className="text-amber-300 font-medium">Miraj-ul-Din Khan (معراج الدین خان)</strong>
+            </div>
+          )}
+        </div>
+
+        {/* Progress Bar & Seek */}
+        <div className="mb-4">
           <input
             type="range"
-            min="0"
+            min={0}
             max={duration || 100}
             value={currentTime}
-            onChange={handleScrubberChange}
-            className="w-full h-1.5 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-amber-400"
+            onChange={handleSeekChange}
+            className="w-full accent-amber-400 h-2 rounded-full cursor-pointer bg-emerald-900"
           />
-          <div className="flex justify-between text-[11px] font-mono text-emerald-400">
+          <div className="flex justify-between text-xs text-emerald-300 font-mono mt-1">
             <span>{formatTime(currentTime)}</span>
-            <span>{isAudioLoading ? 'Buffering...' : formatTime(duration)}</span>
+            <span>{formatTime(duration)}</span>
           </div>
         </div>
 
-        {/* Playback Controls */}
-        <div className="flex items-center justify-center gap-6">
-          {/* Skip Back 10s */}
+        {/* Main Controls Row: Prev, Rewind 15s, Play/Pause, Forward 15s, Next */}
+        <div className="flex items-center justify-center gap-4 mb-5">
           <button
-            onClick={() => onSeek(Math.max(0, currentTime - 10))}
-            className="p-2.5 rounded-2xl bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 active:scale-95 transition"
+            onClick={prev}
+            className="w-10 h-10 rounded-full bg-emerald-900 text-emerald-200 hover:text-white hover:bg-emerald-800 flex items-center justify-center transition active:scale-90"
+            title="Previous / Restart"
+          >
+            <SkipBack size={18} />
+          </button>
+
+          <button
+            onClick={() => seek(Math.max(0, currentTime - 10))}
+            className="w-10 h-10 rounded-full bg-emerald-900 text-emerald-300 hover:text-white flex items-center justify-center transition active:scale-90 text-xs font-bold font-mono"
             title="Rewind 10s"
           >
-            <RotateCcw size={18} />
+            -10s
           </button>
 
-          {/* Previous Ayah */}
           <button
-            onClick={onPrevAyah}
-            className="p-3 rounded-2xl bg-emerald-900 hover:bg-emerald-800 text-emerald-200 active:scale-95 transition"
-            title="Previous Ayah"
-          >
-            <SkipBack size={20} />
-          </button>
-
-          {/* Play/Pause */}
-          <button
-            onClick={onTogglePlay}
-            className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-emerald-950 flex items-center justify-center shadow-xl shadow-amber-500/25 active:scale-95 transition"
-            title={isPlaying ? 'Pause' : 'Play'}
+            onClick={togglePlay}
+            disabled={isLoading}
+            className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-emerald-950 flex items-center justify-center shadow-xl shadow-amber-400/40 hover:scale-105 active:scale-95 transition"
           >
             {isPlaying ? (
               <Pause size={28} fill="currentColor" />
@@ -217,63 +234,119 @@ export const FullAudioPlayerDrawer: React.FC<FullAudioPlayerDrawerProps> = ({
             )}
           </button>
 
-          {/* Next Ayah */}
           <button
-            onClick={onNextAyah}
-            className="p-3 rounded-2xl bg-emerald-900 hover:bg-emerald-800 text-emerald-200 active:scale-95 transition"
-            title="Next Ayah"
+            onClick={() => seek(Math.min(duration, currentTime + 10))}
+            className="w-10 h-10 rounded-full bg-emerald-900 text-emerald-300 hover:text-white flex items-center justify-center transition active:scale-90 text-xs font-bold font-mono"
+            title="Forward 10s"
           >
-            <SkipForward size={20} />
+            +10s
           </button>
 
-          {/* Speed */}
           <button
-            onClick={() => {
-              const speeds = [0.75, 1, 1.25, 1.5];
-              const nextIndex = (speeds.indexOf(playbackSpeed) + 1) % speeds.length;
-              onChangeSpeed(speeds[nextIndex]);
-            }}
-            className="px-2.5 py-2 rounded-2xl bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 text-xs font-mono font-bold active:scale-95 transition"
-            title="Playback Speed"
+            onClick={next}
+            className="w-10 h-10 rounded-full bg-emerald-900 text-emerald-200 hover:text-white hover:bg-emerald-800 flex items-center justify-center transition active:scale-90"
+            title="Next"
           >
-            {playbackSpeed}x
+            <SkipForward size={18} />
           </button>
         </div>
 
-        {/* Recitation Sleep Timer Bar */}
-        <div className="p-3.5 rounded-2xl bg-emerald-950/70 border border-emerald-800/60 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <Clock size={16} className="text-amber-400" />
-            <div>
-              <div className="font-semibold text-white">Auto Recitation Timer</div>
-              <div className="text-[10px] text-emerald-400">
-                {isTimerActive
-                  ? `${Math.floor(timerRemainingSeconds / 60)}m ${timerRemainingSeconds % 60}s remaining`
-                  : 'Auto-stops audio when timer completes'}
+        {/* Secondary Utility Controls */}
+        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-emerald-900">
+          {/* Speed Selector */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsSpeedMenuOpen(!isSpeedMenuOpen);
+                setIsTimerPickerOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-900/60 hover:bg-emerald-900 text-emerald-200 text-xs font-semibold border border-emerald-800 transition active:scale-95"
+            >
+              <Sliders size={14} className="text-amber-400" />
+              <span>{playbackSpeed}x Speed</span>
+            </button>
+
+            {isSpeedMenuOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-32 bg-emerald-900 border border-emerald-700 rounded-xl shadow-xl overflow-hidden p-1 z-20">
+                {speeds.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      changeSpeed(s);
+                      setIsSpeedMenuOpen(false);
+                    }}
+                    className={`w-full py-1.5 text-xs rounded-lg text-center transition ${
+                      playbackSpeed === s ? 'bg-amber-400 text-emerald-950 font-bold' : 'text-emerald-200 hover:bg-emerald-800'
+                    }`}
+                  >
+                    {s}x
+                  </button>
+                ))}
               </div>
-            </div>
+            )}
           </div>
 
-          {isTimerActive ? (
+          {/* Sleep Timer Button */}
+          <div className="relative">
             <button
-              onClick={onStopTimer}
-              className="px-3 py-1.5 rounded-xl bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-semibold hover:bg-red-500/30 transition"
+              onClick={() => {
+                setIsTimerPickerOpen(!isTimerPickerOpen);
+                setIsSpeedMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold border transition active:scale-95 ${
+                isTimerActive
+                  ? 'bg-amber-400 text-emerald-950 font-bold border-amber-400'
+                  : 'bg-emerald-900/60 hover:bg-emerald-900 text-emerald-200 border-emerald-800'
+              }`}
             >
-              Cancel Timer
+              <Clock size={14} />
+              <span>
+                {isTimerActive
+                  ? `${Math.floor(timerRemainingSeconds / 60)}m left`
+                  : 'Sleep Timer'}
+              </span>
             </button>
-          ) : (
-            <div className="flex gap-1.5">
-              {[15, 30].map(mins => (
-                <button
-                  key={mins}
-                  onClick={() => onStartTimer(mins, 'continue_last')}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-900 hover:bg-amber-500 hover:text-emerald-950 text-emerald-300 font-semibold text-xs border border-emerald-800 transition"
-                >
-                  {mins}m
-                </button>
-              ))}
-            </div>
-          )}
+
+            {isTimerPickerOpen && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 bg-emerald-900 border border-emerald-700 rounded-xl shadow-xl p-2 z-20">
+                <p className="text-[11px] font-bold text-amber-300 mb-1 text-center font-arabic">آٹو اسٹاپ ٹائمر</p>
+                <div className="grid grid-cols-2 gap-1 mb-2">
+                  {timerOptions.map(min => (
+                    <button
+                      key={min}
+                      onClick={() => {
+                        startTimer(min, 'continue_last');
+                        setIsTimerPickerOpen(false);
+                      }}
+                      className="py-1 text-xs rounded-lg bg-emerald-950 text-emerald-200 hover:bg-emerald-800 text-center font-mono"
+                    >
+                      {min} Mins
+                    </button>
+                  ))}
+                </div>
+                {isTimerActive && (
+                  <button
+                    onClick={() => {
+                      stopTimer();
+                      setIsTimerPickerOpen(false);
+                    }}
+                    className="w-full py-1 text-[11px] font-bold text-rose-400 hover:bg-rose-500/10 rounded"
+                  >
+                    Cancel Timer
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Change Qari / Reciter */}
+          <button
+            onClick={onOpenQariModal}
+            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-900/60 hover:bg-emerald-900 text-emerald-200 text-xs font-semibold border border-emerald-800 transition active:scale-95"
+          >
+            <Mic size={14} className="text-amber-400" />
+            <span>Qaris</span>
+          </button>
         </div>
       </div>
     </div>

@@ -96,7 +96,7 @@ export const RecitationLivePopup: React.FC<RecitationLivePopupProps> = ({
         {/* Footer info: Voice reciter & touch-free advancement notice */}
         <div className="mt-1.5 flex items-center justify-between text-[10px] text-emerald-400/80 pt-1 border-t border-emerald-900/50">
           <span>
-            {activePhase === 'arabic' ? `Arabic: ${currentQari.name}` : 'Urdu Voice: Shamshad Ali Khan'} &bull; advances automatically
+            {activePhase === 'arabic' ? `Arabic: ${currentQari.name}` : 'Urdu Translation: Maulana Fateh Muhammad Jalandhri (مولانا فتح محمد جالندھری)'} &bull; advances automatically
           </span>
           <span className="flex items-center gap-0.5 text-amber-300 group-hover:underline">
             <span>Open in Reader</span>

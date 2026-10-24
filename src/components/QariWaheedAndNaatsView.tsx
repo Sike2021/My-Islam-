@@ -289,10 +289,10 @@ export const QariWaheedAndNaatsView: React.FC<QariWaheedAndNaatsViewProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 shadow-sm">
               <Music className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>قاری وحید ظفر قاسمی و کلامِ شکر</span>
+              <span>مستند تلاوت و نعتیں · حضرت قاری وحید ظفر قاسمی</span>
             </span>
-            <span className="text-xs text-emerald-300/80">
-              Legendary Naats · Complete 114 Surahs Recitation · Shukran Ya Rabbi
+            <span className="text-xs text-emerald-300/80 bg-emerald-950/80 px-2 py-0.5 rounded-lg border border-emerald-800">
+              100% Authentic Male Recitations Only · Shukran Laka Rabbi
             </span>
           </div>
 

@@ -56,7 +56,7 @@ export const QuranTopicSearch: React.FC<QuranTopicSearchProps> = ({ onOpenSurahR
   });
 
   const handleCopy = (item: QuranicWordProblem) => {
-    const text = `${item.problemOrTopic}\n\nArabic:\n${item.arabicAyah}\n\nUrdu:\n${item.urduTranslation}\n\nEnglish:\n${item.englishTranslation}\n\n[${item.surahName} ${item.ayahNumber}]\nGuidance: ${item.quranicGuidance}\n\nFrom Sike's Perspective on Islam`;
+    const text = `${item.problemOrTopic}\n\nArabic:\n${item.arabicAyah}\n\nUrdu (ترجمہ: مولانا فتح محمد جالندھری):\n${item.urduTranslation}\n\nEnglish:\n${item.englishTranslation}\n\n[${item.surahName} ${item.ayahNumber}]\nGuidance: ${item.quranicGuidance}\n\nFrom Easy Islam`;
     navigator.clipboard.writeText(text);
     setCopiedId(item.id);
     setTimeout(() => setCopiedId(null), 2500);

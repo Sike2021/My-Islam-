@@ -1,3 +1,5 @@
+import { getMirajUlDinSurahAudioUrl } from './merajuddinQuranUrls';
+
 export interface Qari {
   id: string;
   name: string;
@@ -21,11 +23,11 @@ export const QARIS: Qari[] = [
   },
   {
     id: 'urdu-voice',
-    name: 'Arabic + Urdu Voice (Shamshad Ali Khan)',
-    arabicName: 'عربی تلاوت مع اردو ترجمہ آواز',
-    style: 'Soulful Recitation + Spoken Urdu Translation',
+    name: 'Urdu Audio: Maulana Fateh Muhammad Jalandhri',
+    arabicName: 'اردو ترجمہ: مولانا فتح محمد جالندھری',
+    style: 'Default Authentic Urdu Translation (Maulana Fateh Muhammad Jalandhri - Voice: Merajuddin Khan)',
     country: 'Pakistan',
-    serverUrl: 'https://everyayah.com/data/translations/urdu_shamshad_ali_khan_46kbps/',
+    serverUrl: 'https://archive.org/download/Quran-e-Kareem-With-Urdu-ONLY-Translation-Fateh-Muhammad-Jalandhari-------Audio-MP3-CD/',
     image: 'https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=400&q=80',
     hasUrduVoice: true,
   },
@@ -87,11 +89,11 @@ export function padAyahNumber(num: number): string {
 
 // Generate direct streaming URL for a specific Qari and Surah
 export function getSurahAudioUrl(qari: Qari, surahNumber: number): string {
-  const padded = padSurahNumber(surahNumber);
-  if (qari.id === 'urdu-voice') {
-    // For full surah, fallback to Mishary
-    return `https://server8.mp3quran.net/afs/${padded}.mp3`;
+  if (qari.id === 'urdu-voice' || qari.hasUrduVoice) {
+    // Authentic Miraj-ul-Din Khan Urdu translation
+    return getMirajUlDinSurahAudioUrl(surahNumber);
   }
+  const padded = padSurahNumber(surahNumber);
   return `${qari.serverUrl}${padded}.mp3`;
 }
 
@@ -102,9 +104,10 @@ export function getAyahArabicAudioUrl(surahNumber: number, ayahNumber: number): 
   return `https://everyayah.com/data/Alafasy_128kbps/${s}${a}.mp3`;
 }
 
-// Direct URL for individual Ayah Urdu translation audio (by Shamshad Ali Khan)
-export function getAyahUrduAudioUrl(surahNumber: number, ayahNumber: number): string {
-  const s = padSurahNumber(surahNumber);
-  const a = padAyahNumber(ayahNumber);
-  return `https://everyayah.com/data/translations/urdu_shamshad_ali_khan_46kbps/${s}${a}.mp3`;
+// Direct URL for individual Ayah Urdu translation audio
+// Exclusively authentic voice of Miraj-ul-Din Khan
+export function getAyahUrduAudioUrl(surahNumber: number, _ayahNumber?: number): string {
+  // Streams authentic Miraj-ul-Din Khan Urdu recitation for the requested surah
+  return getMirajUlDinSurahAudioUrl(surahNumber);
 }
+

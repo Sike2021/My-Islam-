@@ -65,6 +65,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   });
 
   const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState<boolean>(false);
   const activeAyahRef = useRef<HTMLDivElement | null>(null);
 
   const currentMeta =
@@ -297,33 +298,87 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
         </div>
       </div>
 
-      {/* Featured Video Card for Surah Al-Jinn (Verse 23) from user attachment */}
-      <div className="rounded-3xl bg-gradient-to-r from-emerald-900/90 via-emerald-900/70 to-emerald-950/90 border border-amber-500/30 p-4 shadow-xl">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-xl bg-amber-400/20 text-amber-400">
-              <Video size={16} />
+      {/* Default Translator & Video/Audio Bayan Section: Maulana Fateh Muhammad Jalandhri */}
+      <div className="rounded-3xl bg-gradient-to-r from-emerald-950 via-[#03231a] to-emerald-950 border border-amber-500/40 p-4 shadow-xl space-y-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-400/30">
+              <BookOpen size={18} />
             </div>
             <div>
-              <span className="text-[10px] text-amber-400 font-mono font-semibold uppercase tracking-wider">
-                Video & Spoken Urdu Voice Reel
-              </span>
-              <h4 className="text-xs font-bold text-white">
-                Surah Al-Jinn (72:23) &bull; تلاوت مع اردو ترجمہ آواز
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-semibold border border-amber-400/30">
+                  Default Urdu Translator
+                </span>
+                <span className="text-[10px] text-emerald-300/80 font-arabic">
+                  مولانا فتح محمد جالندھری رحمہ اللہ
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-white mt-0.5">
+                Surah {currentMeta.nameEnglish} &bull; تلاوت مع اردو ترجمہ
               </h4>
             </div>
           </div>
-          <button
-            onClick={() => setShowVideoModal(true)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold text-xs shadow-md transition active:scale-95"
-          >
-            <Play size={12} fill="currentColor" />
-            <span>Watch Reel</span>
-          </button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {/* Audio Play Button */}
+            <button
+              onClick={() => onPlayAyah(currentMeta.number, 1, 'urdu')}
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-900/90 hover:bg-emerald-800 text-amber-300 border border-amber-400/30 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer"
+              title="Play Urdu translation audio by Maulana Fateh Muhammad Jalandhri"
+            >
+              <Volume2 size={14} />
+              <span>Listen Audio</span>
+            </button>
+
+            {/* Optional Toggle to Watch Video (as requested) */}
+            <button
+              onClick={() => setIsVideoPlayerOpen(prev => !prev)}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs shadow-md transition active:scale-95 cursor-pointer ${
+                isVideoPlayerOpen
+                  ? 'bg-amber-400 text-emerald-950 border border-amber-300'
+                  : 'bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white border border-amber-400/40'
+              }`}
+              title="Toggle to watch video translation"
+            >
+              <Video size={14} />
+              <span>{isVideoPlayerOpen ? 'Hide Video' : 'Watch Video'}</span>
+            </button>
+          </div>
         </div>
-        <p className="text-[11px] text-emerald-300/80 italic leading-relaxed">
-          &ldquo;البتہ جس چیز پر مجھے اختیار دیا گیا ہے وہ اللہ کی طرف سے بات پہنچا دینا اور اس کے پیغامات ہیں...&rdquo;
-        </p>
+
+        {/* Video Player Display (Toggled on demand) */}
+        {isVideoPlayerOpen && (
+          <div className="pt-2 border-t border-emerald-900/80 space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between text-xs text-amber-300/90">
+              <span className="font-medium">
+                Fateh Muhammad Jalandhri Video Translation Playlist (سلسلہ ترجمہ قرآن)
+              </span>
+              <a
+                href="https://youtube.com/playlist?list=PLjMdlvowxr_0XqrqKSvbvcKd4562mnonS&si=lPFRawyHvx2DAOnE"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-amber-400 hover:underline flex items-center gap-1"
+              >
+                <span>YouTube Playlist</span>
+                <span className="text-[10px]">&nearr;</span>
+              </a>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-amber-500/40 bg-black shadow-2xl">
+              <iframe
+                src="https://www.youtube-nocookie.com/embed/videoseries?list=PLjMdlvowxr_0XqrqKSvbvcKd4562mnonS&enablejsapi=1"
+                title="Fateh Muhammad Jalandhri Quran Video Translation Playlist"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            <p className="text-[10px] text-emerald-400/80 text-center">
+              Watch verse-by-verse Urdu translation or toggle &ldquo;Hide Video&rdquo; to return to audio only.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Active Reciting Ayah Alert Banner if Playing this Surah */}
@@ -410,7 +465,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                     )}
                     {isSpeakingUrdu && (
                       <span className="text-[10px] font-mono text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/40 animate-pulse font-semibold">
-                        Urdu Voice Active
+                        Urdu (Miraj-ul-Din Khan)
                       </span>
                     )}
                   </div>

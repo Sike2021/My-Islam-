@@ -15,19 +15,22 @@ import { OfflineManager } from './components/OfflineManager';
 import { QarisShowcase } from './components/QarisShowcase';
 import { MiniPlayer } from './components/MiniPlayer';
 import { FullAudioPlayerDrawer } from './components/FullAudioPlayerDrawer';
+import { PlayerImageEditorModal } from './components/PlayerImageEditorModal';
+import { UnifiedVideoWatchModal } from './components/UnifiedVideoWatchModal';
 import { QariSelectorModal } from './components/QariSelectorModal';
 import { CitySelectorModal } from './components/CitySelectorModal';
 import { RecitationLivePopup } from './components/RecitationLivePopup';
 import { PWAInstallModal } from './components/PWAInstallModal';
 import { OfflineChromeBanner } from './components/OfflineChromeBanner';
 import { OfflineIndicator } from './components/OfflineIndicator';
-import { useQuranAudio, ActivePhase } from './hooks/useQuranAudio';
+import { UnifiedPlayerProvider, useUnifiedPlayer, ActivePhase } from './context/UnifiedPlayerContext';
 import { POPULAR_CITIES, CityOption, calculatePrayerTimes } from './utils/prayerTimes';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveNavTab>('timer');
+function AppContent() {
+  const [activeTab, setActiveTab] = useState<ActiveNavTab>('reader');
   const [selectedReaderSurah, setSelectedReaderSurah] = useState<number>(1);
   const [isFullPlayerOpen, setIsFullPlayerOpen] = useState(false);
+  const [isPlayerImageEditorOpen, setIsPlayerImageEditorOpen] = useState(false);
   const [isQariModalOpen, setIsQariModalOpen] = useState(false);
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
@@ -61,8 +64,9 @@ export default function App() {
     return calculatePrayerTimes(selectedCity);
   }, [selectedCity]);
 
-  // Quran Audio Engine
+  // Master Unified Player Engine
   const {
+    activeTrack,
     currentQari,
     currentSurahNumber,
     currentAyahNumber,
@@ -71,7 +75,7 @@ export default function App() {
     currentTime,
     duration,
     playbackSpeed,
-    isAudioLoading,
+    isLoading: isAudioLoading,
     sequenceMode,
     activePhase,
     setSequenceMode,
@@ -81,32 +85,34 @@ export default function App() {
     timerMode,
     lastPosition,
     history,
-    playSurah,
-    playAyahAudioStep,
-    pauseAudio,
-    resumeAudio,
     togglePlay,
     seek,
     changeSpeed,
-    nextSurah,
-    prevSurah,
-    startAutoRecitation,
-    stopAutoRecitation,
+    next,
+    prev,
+    startTimer,
+    stopTimer,
     changeQari,
     clearHistory,
-  } = useQuranAudio();
+    playQuranSurahAyah,
+    customPlayerCover,
+    setCustomPlayerCover,
+    isVideoModalOpen,
+    activeVideo,
+    closeVideoWatch,
+  } = useUnifiedPlayer();
 
   const handleSelectSurahFromReader = (surahNum: number) => {
     setSelectedReaderSurah(surahNum);
   };
 
   const handlePlayAyah = (surahNum: number, ayahNum: number, phase: ActivePhase = 'arabic') => {
-    playAyahAudioStep(surahNum, ayahNum, phase);
+    playQuranSurahAyah(surahNum, ayahNum, phase);
     setSelectedReaderSurah(surahNum);
   };
 
   const handleResumeListening = () => {
-    playAyahAudioStep(lastPosition.surahNumber, lastPosition.ayahNumber, 'arabic');
+    playQuranSurahAyah(lastPosition.surahNumber, lastPosition.ayahNumber, 'arabic');
     setSelectedReaderSurah(lastPosition.surahNumber);
   };
 
@@ -137,35 +143,67 @@ export default function App() {
       {/* Dismissible Chrome App / Android APK Install Banner */}
       <OfflineChromeBanner onOpenInstallModal={() => setIsInstallModalOpen(true)} />
 
-      {/* Real-time Recitation Live Popup: Pops up exact currently reciting phrase with simultaneous Arabic + Urdu + English */}
-      <RecitationLivePopup
-        isPlaying={isPlaying}
-        currentSurah={currentSurahMeta}
-        currentAyahNumber={currentAyahNumber}
-        activePhase={activePhase}
-        currentQari={currentQari}
-        onOpenReaderToAyah={handleOpenReaderToAyah}
-        onTogglePlay={togglePlay}
-        onNextAyah={nextSurah}
-      />
+      {/* Real-time Recitation Live Popup: Exact verse with simultaneous Arabic + Urdu (Miraj-ul-Din Khan) + English */}
+      {activeTrack.type === 'quran' && isPlaying && (
+        <RecitationLivePopup
+          isPlaying={isPlaying}
+          currentSurah={currentSurahMeta}
+          currentAyahNumber={currentAyahNumber}
+          activePhase={activePhase}
+          currentQari={currentQari}
+          onOpenReaderToAyah={handleOpenReaderToAyah}
+          onTogglePlay={togglePlay}
+          onNextAyah={next}
+        />
+      )}
 
-      {/* Main Container / Mobile Viewport */}
-      <main className="w-full max-w-md mx-auto flex-1 px-4 pt-2">
+      {/* Main Container / Android Touch Viewport */}
+      <main className={`w-full ${activeTab === 'hadith' || activeTab === 'israr' || activeTab === 'ulama' ? 'max-w-2xl' : 'max-w-md'} mx-auto flex-1 px-3 sm:px-4 pt-2`}>
         {/* Quick Access Horizontal Pills (Android Touch Friendly) */}
         <div className="flex items-center overflow-x-auto no-scrollbar gap-1.5 pb-2.5 mb-2 -mx-1 px-1">
+          {/* 1. Holy Quran */}
           <button
-            onClick={() => setActiveTab('hadith')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
-              activeTab === 'hadith'
+            onClick={() => setActiveTab('reader')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'reader'
                 ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
                 : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
             }`}
           >
-            <span>📚</span>
-            <span>Hadith Library</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">کتب احادیث • ڈاؤنلوڈ</span>
+            <span>📖</span>
+            <span>Quran</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">فتح محمد جالندھری</span>
           </button>
 
+          {/* 2. Dr. Israr Ahmed */}
+          <button
+            onClick={() => setActiveTab('israr')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'israr'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🎙️</span>
+            <span>Dr. Israr</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">بیان القرآن</span>
+          </button>
+
+          {/* 3. Maulana Maududi */}
+          <button
+            onClick={() => setActiveTab('ulama')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'ulama'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>📜</span>
+            <span>Maududi</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">تفہیم القرآن</span>
+          </button>
+
+          {/* 4. Duas & 4 Quls */}
           <button
             onClick={() => setActiveTab('duas')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
@@ -176,46 +214,24 @@ export default function App() {
           >
             <span>🤲</span>
             <span>Duas & 4 Quls</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">آیت الکرسی • درود</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">آیت الکرسی • درود</span>
           </button>
 
+          {/* 5. Hadith Library */}
           <button
-            onClick={() => setActiveTab('reader')}
+            onClick={() => setActiveTab('hadith')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
-              activeTab === 'reader'
+              activeTab === 'hadith'
                 ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
                 : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
             }`}
           >
-            <span>📖</span>
-            <span>Read Quran</span>
+            <span>📚</span>
+            <span>Hadith Library</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">کتب احادیث</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('ulama')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
-              activeTab === 'ulama'
-                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
-                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
-            }`}
-          >
-            <span>🎓</span>
-            <span>Ulama Bayans</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">مودودی • اسحاق</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('israr')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
-              activeTab === 'israr'
-                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
-                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
-            }`}
-          >
-            <span>🎙️</span>
-            <span>Dr. Israr</span>
-          </button>
-
+          {/* 6. Qari Waheed Naats */}
           <button
             onClick={() => setActiveTab('naats')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
@@ -226,22 +242,10 @@ export default function App() {
           >
             <span>🎵</span>
             <span>Qari Waheed Naats</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">شکرًا لك ربي</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">شکرًا لك ربي</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('search')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
-              activeTab === 'search'
-                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
-                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
-            }`}
-          >
-            <span>🔍</span>
-            <span>Urdu Search</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-amber-300 font-arabic font-normal">نماز • شرک</span>
-          </button>
-
+          {/* 7. Auto Timer */}
           <button
             onClick={() => setActiveTab('timer')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
@@ -252,6 +256,33 @@ export default function App() {
           >
             <span>⏱️</span>
             <span>Timer</span>
+          </button>
+
+          {/* 8. Urdu Quran Topic Search */}
+          <button
+            onClick={() => setActiveTab('search')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'search'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>🔍</span>
+            <span>Urdu Search</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950/70 text-amber-300 font-arabic font-normal">نماز • شرک</span>
+          </button>
+
+          {/* 9. Khatam Tracker */}
+          <button
+            onClick={() => setActiveTab('khatam')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition shrink-0 active:scale-95 ${
+              activeTab === 'khatam'
+                ? 'bg-amber-400 text-emerald-950 shadow-md shadow-amber-400/20 font-bold'
+                : 'bg-emerald-900/60 text-emerald-200 hover:bg-emerald-900 border border-emerald-800/60'
+            }`}
+          >
+            <span>📿</span>
+            <span>Khatam</span>
           </button>
         </div>
 
@@ -280,8 +311,8 @@ export default function App() {
             lastPosition={lastPosition}
             prayerTimes={prayerTimes}
             qariName={currentQari.name}
-            onStartTimer={startAutoRecitation}
-            onStopTimer={stopAutoRecitation}
+            onStartTimer={startTimer}
+            onStopTimer={stopTimer}
             onToggleSequenceMode={handleToggleSequenceMode}
             onOpenQariModal={() => setIsQariModalOpen(true)}
           />
@@ -338,7 +369,7 @@ export default function App() {
             onSelectSurah={surahNum => {
               setSelectedReaderSurah(surahNum);
               setActiveTab('reader');
-              playAyahAudioStep(surahNum, 1, 'arabic');
+              playQuranSurahAyah(surahNum, 1, 'arabic');
             }}
             onClearHistory={clearHistory}
           />
@@ -353,7 +384,7 @@ export default function App() {
             currentQari={currentQari}
             onOpenInstallModal={() => setIsInstallModalOpen(true)}
             onPlaySurah={surahNum => {
-              playAyahAudioStep(surahNum, 1, 'arabic');
+              playQuranSurahAyah(surahNum, 1, 'arabic');
               setSelectedReaderSurah(surahNum);
             }}
           />
@@ -369,19 +400,10 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Mini Player (visible above the bottom navigation bar) */}
+      {/* Floating Unified Mini Player (visible above the bottom navigation bar) */}
       <MiniPlayer
-        currentSurah={currentSurahMeta}
-        currentAyahNumber={currentAyahNumber}
-        activePhase={activePhase}
-        currentQari={currentQari}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        isTimerActive={isTimerActive}
-        timerRemainingSeconds={timerRemainingSeconds}
-        onTogglePlay={togglePlay}
         onOpenFullPlayer={() => setIsFullPlayerOpen(true)}
+        onOpenImageEditor={() => setIsPlayerImageEditorOpen(true)}
       />
 
       {/* Bottom Android Navigation Bar (Fixed 5-Tab Layout) */}
@@ -405,28 +427,27 @@ export default function App() {
       {/* Full Audio Player Drawer (Expandable) */}
       <FullAudioPlayerDrawer
         isOpen={isFullPlayerOpen}
-        currentSurah={currentSurahMeta}
-        currentAyahNumber={currentAyahNumber}
-        activePhase={activePhase}
-        sequenceMode={sequenceMode}
-        currentQari={currentQari}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        playbackSpeed={playbackSpeed}
-        isAudioLoading={isAudioLoading}
-        isTimerActive={isTimerActive}
-        timerTotalMinutes={timerTotalMinutes}
-        timerRemainingSeconds={timerRemainingSeconds}
-        onTogglePlay={togglePlay}
-        onSeek={seek}
-        onNextAyah={nextSurah}
-        onPrevAyah={prevSurah}
-        onChangeSpeed={changeSpeed}
-        onStartTimer={startAutoRecitation}
-        onStopTimer={stopAutoRecitation}
-        onOpenQariModal={() => setIsQariModalOpen(true)}
         onClose={() => setIsFullPlayerOpen(false)}
+        onOpenQariModal={() => setIsQariModalOpen(true)}
+        onOpenImageEditor={() => setIsPlayerImageEditorOpen(true)}
+      />
+
+      {/* Player Image / Cover Editor Modal ("First Player Editor Have an Image of Player then We Can Change It") */}
+      <PlayerImageEditorModal
+        isOpen={isPlayerImageEditorOpen}
+        currentCustomCover={customPlayerCover}
+        defaultTrackCover={activeTrack.coverImage}
+        onSaveCustomCover={setCustomPlayerCover}
+        onClose={() => setIsPlayerImageEditorOpen(false)}
+      />
+
+      {/* Unified Video Watch Modal */}
+      <UnifiedVideoWatchModal
+        isOpen={isVideoModalOpen}
+        videoUrl={activeVideo?.url}
+        title={activeVideo?.title || 'Islamic Video Lecture'}
+        subtitle={activeVideo?.subtitle}
+        onClose={closeVideoWatch}
       />
 
       {/* Qari Selection Modal */}
@@ -451,5 +472,13 @@ export default function App() {
         onClose={() => setIsInstallModalOpen(false)}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <UnifiedPlayerProvider>
+      <AppContent />
+    </UnifiedPlayerProvider>
   );
 }

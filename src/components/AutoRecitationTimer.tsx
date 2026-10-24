@@ -320,7 +320,7 @@ export const AutoRecitationTimer: React.FC<AutoRecitationTimerProps> = ({
             >
               <div>
                 <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>{sequenceMode === 'arabic_and_urdu' ? 'Arabic Recitation + Spoken Urdu Translation' : 'Arabic Only'}</span>
+                  <span>{sequenceMode === 'arabic_and_urdu' ? 'Arabic Recitation + Urdu Voice (Miraj-ul-Din Khan)' : 'Arabic Only'}</span>
                   {sequenceMode === 'arabic_and_urdu' && (
                     <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-400 text-emerald-950 font-bold">
                       Hands-Free
@@ -329,7 +329,7 @@ export const AutoRecitationTimer: React.FC<AutoRecitationTimerProps> = ({
                 </div>
                 <div className="text-[10px] text-emerald-300/80 mt-0.5">
                   {sequenceMode === 'arabic_and_urdu'
-                    ? 'Plays each Ayat in Arabic, followed automatically by spoken Urdu voice, then advances without touching.'
+                    ? 'Plays each Ayat in Arabic, followed automatically by spoken Urdu audio of Miraj-ul-Din Khan (معراج الدین خان), then advances without touching.'
                     : 'Plays continuous Arabic recitation verse-by-verse.'}
                 </div>
               </div>
